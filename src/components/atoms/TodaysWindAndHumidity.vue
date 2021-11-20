@@ -1,7 +1,7 @@
 <template>
   <p :class="classes">
-    Wind: 11 mph<br />
-    Humidity: 48%
+    Wind: {{ windSpeed }} mph<br />
+    Humidity: {{ humidity }}%
   </p>
 </template>
 
@@ -11,6 +11,14 @@ export default {
     big: {
       type: Boolean,
       default: false,
+    },
+    humidity: {
+      type: Number,
+      required: true,
+    },
+    windSpeed: {
+      type: Number,
+      required: true,
     },
   },
   computed: {

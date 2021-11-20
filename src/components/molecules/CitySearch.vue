@@ -23,10 +23,11 @@
 
 <script>
 export default {
-  data() {
-    return {
-      today: "Friday",
-    }
+  props: {
+    today: {
+      type: String,
+      required: true,
+    },
   },
 }
 </script>
