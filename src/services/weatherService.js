@@ -1,6 +1,7 @@
 import axios from "axios"
+import _ from "lodash"
 
-const WEATHER_API_KEY = "be2853525b64df346a912d8d1642e889"
+const WEATHER_API_KEY = process.env.VUE_APP_WEATHER_API_KEY
 
 const getCoordinatesFromBrowser = async () => {
   const pos = await new Promise((resolve, reject) => {
@@ -24,10 +25,10 @@ const getCoordinatesFromCity = async (city) => {
   }
 }
 
-const getAllForecasts = async () => {
+const getAllForecasts = async (lon, lat) => {
   try {
     const allForecastsResponse = await axios.get(
-      `https://api.openweathermap.org/data/2.5/onecall?lat=33.44&lon=-94.04&exclude=minutely,current&units=imperial&appid=${WEATHER_API_KEY}`
+      `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,current&units=imperial&appid=${WEATHER_API_KEY}`
     )
 
     return allForecastsResponse.data
@@ -37,35 +38,57 @@ const getAllForecasts = async () => {
 }
 
 const getOrganizedWeatherData = async (allForecastsData) => {
-  const days = allForecastsData.daily.slice(0, 7).map((day) => {
-    return {
-      minTemp: day.temp.min,
-      maxTemp: day.temp.max,
-      humidity: day.humidity,
-      windSpeed: day.wind_speed,
-      description: day.weather.description,
-    }
-  })
+  const dailyForecasts = allForecastsData.daily
+    .slice(0, 7)
+    .map((allDayData, index) => {
+      var date = new Date(allDayData.dt * 1000)
+      const weekDayName = date.toLocaleString("en-US", {
+        weekday: "short",
+      })
 
-  const hours = allForecastsData.hourly.slice(0, 6).map((hour) => {
+      let dailyForecast = {}
+      if (index === 0) {
+        dailyForecast["weekDayNameLong"] = date.toLocaleString("en-US", {
+          weekday: "long",
+        })
+        dailyForecast["humidity"] = allDayData.humidity
+        dailyForecast["windSpeed"] = Math.round(allDayData.wind_speed)
+        dailyForecast["description"] = allDayData.weather.description
+      }
+
+      dailyForecast = {
+        ...dailyForecast,
+        id: _.uniqueId("dailyForecasts-"),
+        weekDayName: weekDayName,
+        minTemp: Math.round(allDayData.temp.min),
+        maxTemp: Math.round(allDayData.temp.max),
+      }
+      return dailyForecast
+    })
+
+  const hourlyForecasts = allForecastsData.hourly.slice(0, 6).map((hour) => {
     var date = new Date(hour.dt * 1000)
     const hourAMPM = date.toLocaleString("en-US", {
       hour: "numeric",
       hour12: true,
     })
     const formattedHour = hourAMPM.replace(/\s+/g, "").toLowerCase()
+
     return {
-      time: formattedHour,
+      id: _.uniqueId("hourlyForecasts-"),
+      hourTime: formattedHour,
       temp: Math.round(hour.temp),
     }
   })
 
-  return { hours, days }
+  const todaysWeather = { ...dailyForecasts[0], temp: hourlyForecasts[0].temp }
+
+  return { hourlyForecasts, dailyForecasts, todaysWeather }
 }
 
 export const getWeatherFromCoordinates = async () => {
   try {
-    const coordinates = getCoordinatesFromBrowser()
+    const coordinates = await getCoordinatesFromBrowser()
     const allForecastsData = await getAllForecasts(
       coordinates.lon,
       coordinates.lat
