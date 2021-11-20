@@ -30,8 +30,12 @@
             </span>
             <h1><strong>Shawn's Weather App </strong></h1>
             <a href="https://shawnm.dev">
-              <figure class="image is-36x36 px-2">
-                <img class="is-rounded" src="@/assets/shawn.png" />
+              <figure class="image px-2">
+                <img
+                  class="is-rounded"
+                  src="@/assets/shawn.png"
+                  style="width: 28px !important; height: 28px !important"
+                />
               </figure>
             </a>
           </span>

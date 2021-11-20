@@ -7,7 +7,9 @@
           v-for="(forecast, index) in dailyForecasts"
           :key="forecast.id"
           class="column is-flex is-justify-content-center"
-          :class="index === selectedDayIndex ? 'has-background-white' : ''"
+          :class="
+            index === selectedDayIndex ? 'has-background-white' : 'is-clickable'
+          "
           @click="switchToSelectedDay(index)"
         >
           <div class="mb-4">
