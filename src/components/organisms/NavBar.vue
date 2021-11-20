@@ -1,12 +1,12 @@
 <template>
   <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-      <a class="navbar-item" href="https://devpost.com">
+      <a class="navbar-item" href="https://reddit.com">
         <img
           alt="DevPost"
-          width="185"
-          height="36"
-          src="https://devpost-challengepost.netdna-ssl.com/assets/reimagine2/devpost-logo-646bdf6ac6663230947a952f8d354cad.svg"
+          width="60"
+          height="28"
+          src="@/assets/Random-Brand-logos.jpeg"
         />
       </a>
 
