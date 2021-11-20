@@ -3,10 +3,16 @@
     <div class="columns">
       <div class="field has-addons column">
         <div class="control" style="width: 100%">
-          <input class="input" type="text" placeholder="Search for a city" />
+          <input
+            v-model="city"
+            class="input"
+            type="text"
+            placeholder="Search for a city"
+            @keyup.enter="submit"
+          />
         </div>
         <div class="control">
-          <a class="button is-info"> Search </a>
+          <a class="button is-primary" @click="submit"> Search </a>
         </div>
       </div>
     </div>
@@ -18,11 +24,43 @@
         </p>
       </div>
     </div>
+    <ErrorModal
+      v-model:show="showErrorModal"
+      :message="errorMessage"
+      icon="mdi-alert-circle"
+    />
   </div>
 </template>
 
 <script>
+import { mapActions } from "vuex"
+import ErrorModal from "@/components/molecules/ErrorModal.vue"
+
 export default {
+  components: {
+    ErrorModal,
+  },
+  data() {
+    return {
+      city: "",
+      errorMessage: "",
+      showErrorModal: false,
+    }
+  },
+
+  methods: {
+    ...mapActions(["searchForCityWeather"]),
+    async submit() {
+      const success = await this.searchForCityWeather(this.city)
+      if (success) {
+        return
+      } else {
+        this.errorMessage = "City not found, please try again."
+        this.showErrorModal = true
+      }
+    },
+  },
+
   props: {
     today: {
       type: String,

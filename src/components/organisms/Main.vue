@@ -1,47 +1,58 @@
 <template>
-  <div class="container">
-    <div class="columns">
-      <div class="column is-narrow">
-        <TodaysTemperature
-          class="p-5"
-          :windSpeed="getTodaysWeather.windSpeed"
-          :humidity="getTodaysWeather.humidity"
-          :temp="getTodaysWeather.temp"
+  <div>
+    <div v-if="geoLocationSuccessful">
+      <div class="columns">
+        <div class="column is-narrow">
+          <TodaysTemperature
+            class="px-6 pt-6 pb-4"
+            :windSpeed="getTodaysWeather.windSpeed"
+            :humidity="getTodaysWeather.humidity"
+            :temp="getTodaysWeather.temp"
+          />
+        </div>
+        <div class="column py-0"></div>
+        <div class="column is-narrow">
+          <CitySearch
+            class="px-6 pt-6 pb-4"
+            :today="getTodaysWeather.weekDayNameLong"
+          />
+        </div>
+      </div>
+      <div class="p-4">
+        <HourlyTemperatures
+          class="px-5 pb-5 pt-0"
+          :hourlyForecasts="getHourlyForecasts"
         />
       </div>
-      <div class="column py-0"></div>
-      <div class="column is-narrow">
-        <CitySearch class="p-5" :today="getTodaysWeather.weekDayNameLong" />
-      </div>
-    </div>
-    <div class="p-4">
-      <HourlyTemperatures class="p-4" :hourlyForecasts="getHourlyForecasts" />
-    </div>
-    <div class="p-4">
       <SevenDayForecast
         class="has-background-white-ter"
         :dailyForecasts="getDailyForecasts"
       />
-      <TodaysDetails
-        class="p-4 m-4"
-        :windSpeed="getTodaysWeather.windSpeed"
-        :humidity="getTodaysWeather.humidity"
-        :lowTemp="getTodaysWeather.minTemp"
-        :highTemp="getTodaysWeather.maxTemp"
-      />
     </div>
+    <ErrorModal
+      v-model:show="showErrorModal"
+      :message="errorMessage"
+      icon="mdi-alert-circle"
+    />
   </div>
 </template>
 
 <script>
-import TodaysDetails from "../molecules/TodaysDetails.vue"
 import TodaysTemperature from "../molecules/TodaysTemperature.vue"
 import HourlyTemperatures from "../molecules/HourlyTemperatures.vue"
 import SevenDayForecast from "../molecules/SevenDayForecast.vue"
 import CitySearch from "../molecules/CitySearch.vue"
 import { mapActions, mapGetters } from "vuex"
+import ErrorModal from "../molecules/ErrorModal.vue"
 
 export default {
+  data() {
+    return {
+      errorMessage: "",
+      showErrorModal: false,
+      geoLocationSuccessful: false,
+    }
+  },
   computed: {
     ...mapGetters([
       "getDailyForecasts",
@@ -55,15 +66,22 @@ export default {
   },
 
   components: {
-    TodaysDetails,
     TodaysTemperature,
     HourlyTemperatures,
     SevenDayForecast,
     CitySearch,
+    ErrorModal,
   },
 
   async created() {
-    await this.refreshWeather()
+    const success = await this.refreshWeather()
+    if (!success) {
+      this.errorMessage =
+        "You can enable geolocation in your browser settings and refresh to continue"
+      this.showErrorModal = true
+    } else {
+      this.geoLocationSuccessful = success
+    }
   },
 }
 </script>

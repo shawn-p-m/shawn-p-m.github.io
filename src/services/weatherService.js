@@ -3,14 +3,22 @@ import _ from "lodash"
 
 const WEATHER_API_KEY = process.env.VUE_APP_WEATHER_API_KEY
 
-const getCoordinatesFromBrowser = async () => {
-  const pos = await new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(resolve, reject)
-  })
+const capitalizeFirstLetterOnly = (sentence) => {
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1)
+}
 
-  return {
-    lon: pos.coords.longitude,
-    lat: pos.coords.latitude,
+const getCoordinatesFromBrowser = async () => {
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject)
+    })
+
+    return {
+      lon: pos.coords.longitude,
+      lat: pos.coords.latitude,
+    }
+  } catch (err) {
+    console.error(err)
   }
 }
 
@@ -40,30 +48,29 @@ const getAllForecasts = async (lon, lat) => {
 const getOrganizedWeatherData = async (allForecastsData) => {
   const dailyForecasts = allForecastsData.daily
     .slice(0, 7)
-    .map((allDayData, index) => {
+    .map((allDayData) => {
       var date = new Date(allDayData.dt * 1000)
       const weekDayName = date.toLocaleString("en-US", {
         weekday: "short",
       })
+      const weekDayNameLong = date.toLocaleString("en-US", {
+        weekday: "long",
+      })
 
-      let dailyForecast = {}
-      if (index === 0) {
-        dailyForecast["weekDayNameLong"] = date.toLocaleString("en-US", {
-          weekday: "long",
-        })
-        dailyForecast["humidity"] = allDayData.humidity
-        dailyForecast["windSpeed"] = Math.round(allDayData.wind_speed)
-        dailyForecast["description"] = allDayData.weather.description
-      }
+      const capitalizedDescription = capitalizeFirstLetterOnly(
+        allDayData.weather[0].description
+      )
 
-      dailyForecast = {
-        ...dailyForecast,
+      return {
         id: _.uniqueId("dailyForecasts-"),
+        weekDayNameLong: weekDayNameLong,
+        humidity: allDayData.humidity,
+        windSpeed: Math.round(allDayData.wind_speed),
+        description: capitalizedDescription,
         weekDayName: weekDayName,
         minTemp: Math.round(allDayData.temp.min),
         maxTemp: Math.round(allDayData.temp.max),
       }
-      return dailyForecast
     })
 
   const hourlyForecasts = allForecastsData.hourly.slice(0, 6).map((hour) => {
@@ -103,6 +110,7 @@ export const getWeatherFromCoordinates = async () => {
 export const getWeatherFromCity = async (city) => {
   try {
     const coordinates = await getCoordinatesFromCity(city)
+
     const allForecastsData = await getAllForecasts(
       coordinates.lon,
       coordinates.lat
