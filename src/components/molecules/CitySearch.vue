@@ -35,6 +35,7 @@
 <script>
 import { mapActions } from "vuex"
 import ErrorModal from "@/components/molecules/ErrorModal.vue"
+import { throttle } from "lodash"
 
 export default {
   components: {
@@ -50,7 +51,7 @@ export default {
 
   methods: {
     ...mapActions(["searchForCityWeather"]),
-    async submit() {
+    submit: throttle(async function () {
       const success = await this.searchForCityWeather(this.city)
       if (success) {
         return
@@ -58,7 +59,7 @@ export default {
         this.errorMessage = "City not found, please try again."
         this.showErrorModal = true
       }
-    },
+    }, 1000),
   },
 
   props: {

@@ -20,11 +20,11 @@ export default createStore({
     dailyForecasts: null,
     hourlyForecasts: null,
     lastRefreshTime: null,
-    lastRefreshFromSearch: null,
+    isLastRefreshFromSearch: null,
   },
   mutations: {
-    setLastRefreshFromSearch(state, lastRefreshFromSearch) {
-      state.lastRefreshFromSearch = lastRefreshFromSearch
+    setIsLastRefreshFromSearch(state, isLastRefreshFromSearch) {
+      state.isLastRefreshFromSearch = isLastRefreshFromSearch
     },
     setLastRefreshTime(state) {
       state.lastRefreshTime = Math.round(new Date().getTime() / 1000)
@@ -44,46 +44,52 @@ export default createStore({
     getDailyForecasts: (state) => state.dailyForecasts,
     getHourlyForecasts: (state) => state.hourlyForecasts,
     getLastRefreshTime: (state) => state.lastRefreshTime,
-    getLastRefreshFromSearch: (state) => state.lastRefreshFromSearch,
+    getIsLastRefreshFromSearch: (state) => state.isLastRefreshFromSearch,
   },
   actions: {
     async refreshWeather({ commit, getters }) {
-      if (!getters.getLastRefreshFromSearch) {
-        if (!getters.getLastRefreshTime) {
-          if (hasRefreshedRecently(getters.getLastRefreshTime)) {
-            return
-          }
+      let success
+      if (getters.getLastRefreshTime && !getters.getIsLastRefreshFromSearch) {
+        if (hasRefreshedRecently(getters.getLastRefreshTime)) {
+          success = true
+          return success
         }
       }
-
       try {
         const weather = await getWeatherFromCoordinates()
         commit("setTodaysWeather", weather.todaysWeather)
         commit("setDailyForecasts", weather.dailyForecasts)
         commit("setHourlyForecasts", weather.hourlyForecasts)
         commit("setLastRefreshTime")
-        commit("setLastRefreshFromSearch", false)
-        return true
+        commit("setIsLastRefreshFromSearch", false)
+        success = true
       } catch {
-        return false
+        success = false
       }
+
+      return success
     },
 
     async searchForCityWeather({ commit }, city) {
+      let success
+
       if (!city) {
-        return
+        success = false
+        return success
       }
+
       try {
         const weather = await getWeatherFromCity(city)
         commit("setTodaysWeather", weather.todaysWeather)
         commit("setDailyForecasts", weather.dailyForecasts)
         commit("setHourlyForecasts", weather.hourlyForecasts)
         commit("setLastRefreshTime")
-        commit("setLastRefreshFromSearch", true)
-        return true
+        commit("setIsLastRefreshFromSearch", true)
+        success = true
       } catch {
-        return false
+        success = false
       }
+      return success
     },
   },
   plugins: [createPersistedState()],
