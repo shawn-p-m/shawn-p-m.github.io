@@ -1,5 +1,5 @@
 <template>
-  <div class="columns is-centered">
+  <div class="columns">
     <div class="column is-narrow">
       <p class="title is-1">{{ temp }}<span class="title">°F</span></p>
     </div>

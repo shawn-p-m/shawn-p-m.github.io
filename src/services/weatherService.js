@@ -22,15 +22,27 @@ const getCoordinatesFromBrowser = async () => {
   }
 }
 
-const getCoordinatesFromCity = async (city) => {
+const getCoordsAndPrettyCityFromCity = async (city) => {
   try {
     const cityResponse = await axios.get(
       `https://api.openweathermap.org/data/2.5/forecast/daily?cnt=1&q=${city}&appid=${WEATHER_API_KEY}`
     )
-    return cityResponse.data.city.coord
+
+    return {
+      prettyCity: cityResponse.data.city.name,
+      coordinates: cityResponse.data.city.coord,
+    }
   } catch (err) {
     console.error(err)
   }
+}
+
+const getCityFromCoordinates = async (coords) => {
+  const coordsResponse = await axios.get(
+    `https://api.openweathermap.org/data/2.5/forecast/daily?lat=${coords.lat}&lon=${coords.lon}&cnt=1&appid=${WEATHER_API_KEY}`
+  )
+
+  return coordsResponse.data.city.name
 }
 
 const getAllForecasts = async (lon, lat) => {
@@ -39,7 +51,10 @@ const getAllForecasts = async (lon, lat) => {
       `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,current&units=imperial&appid=${WEATHER_API_KEY}`
     )
 
-    return allForecastsResponse.data
+    return {
+      city: await getCityFromCoordinates({ lon, lat }),
+      ...allForecastsResponse.data,
+    }
   } catch (err) {
     console.error(err)
   }
@@ -53,6 +68,7 @@ const getOrganizedWeatherData = async (allForecastsData) => {
       const weekDayName = date.toLocaleString("en-US", {
         weekday: "short",
       })
+
       const weekDayNameLong = date.toLocaleString("en-US", {
         weekday: "long",
       })
@@ -90,7 +106,12 @@ const getOrganizedWeatherData = async (allForecastsData) => {
 
   const todaysWeather = { ...dailyForecasts[0], temp: hourlyForecasts[0].temp }
 
-  return { hourlyForecasts, dailyForecasts, todaysWeather }
+  return {
+    city: allForecastsData.city,
+    hourlyForecasts,
+    dailyForecasts,
+    todaysWeather,
+  }
 }
 
 export const getWeatherFromCoordinates = async () => {
@@ -109,14 +130,16 @@ export const getWeatherFromCoordinates = async () => {
 
 export const getWeatherFromCity = async (city) => {
   try {
-    const coordinates = await getCoordinatesFromCity(city)
+    const { coordinates, prettyCity } = await getCoordsAndPrettyCityFromCity(
+      city
+    )
 
     const allForecastsData = await getAllForecasts(
       coordinates.lon,
       coordinates.lat
     )
 
-    return getOrganizedWeatherData(allForecastsData)
+    return getOrganizedWeatherData({ city: prettyCity, ...allForecastsData })
   } catch (err) {
     console.error(err)
   }

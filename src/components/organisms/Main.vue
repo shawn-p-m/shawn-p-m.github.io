@@ -1,19 +1,32 @@
 <template>
   <div>
     <div v-if="geoLocationSuccessful">
-      <div class="columns">
-        <div class="column is-narrow">
+      <div class="columns is-multiline">
+        <div class="column is-narrow is-4">
           <TodaysTemperature
-            class="px-6 pt-6 pb-4"
+            class="pt-4 pb-4 px-4"
             :windSpeed="getTodaysWeather.windSpeed"
             :humidity="getTodaysWeather.humidity"
             :temp="getTodaysWeather.temp"
           />
         </div>
-        <div class="column py-0"></div>
-        <div class="column is-narrow">
+        <div
+          class="
+            column
+            is-4
+            pt-4
+            pb-4
+            has-text-centered
+            is-flex is-align-items-center is-justify-content-center
+          "
+        >
+          <span class="title is-capitalized">
+            {{ getCity }}
+          </span>
+        </div>
+        <div class="column is-narrow is-4">
           <CitySearch
-            class="px-6 pt-6 pb-4"
+            class="pt-4 pb-4 px-4"
             :today="getTodaysWeather.weekDayNameLong"
           />
         </div>
@@ -58,6 +71,7 @@ export default {
       "getDailyForecasts",
       "getHourlyForecasts",
       "getTodaysWeather",
+      "getCity",
     ]),
   },
 

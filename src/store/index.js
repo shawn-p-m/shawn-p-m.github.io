@@ -16,30 +16,40 @@ const hasRefreshedRecently = (lastRefreshTime) => {
 
 export default createStore({
   state: {
-    todaysWeather: null,
+    city: null,
     dailyForecasts: null,
     hourlyForecasts: null,
     lastRefreshTime: null,
     isLastRefreshFromSearch: null,
+    todaysWeather: null,
   },
   mutations: {
+    setCity(state, city) {
+      state.city = city
+    },
+
     setIsLastRefreshFromSearch(state, isLastRefreshFromSearch) {
       state.isLastRefreshFromSearch = isLastRefreshFromSearch
     },
+
     setLastRefreshTime(state) {
       state.lastRefreshTime = Math.round(new Date().getTime() / 1000)
     },
+
     setTodaysWeather(state, todaysWeather) {
       state.todaysWeather = todaysWeather
     },
+
     setDailyForecasts(state, dailyForecasts) {
       state.dailyForecasts = dailyForecasts
     },
+
     setHourlyForecasts(state, hourlyForecasts) {
       state.hourlyForecasts = hourlyForecasts
     },
   },
   getters: {
+    getCity: (state) => state.city,
     getTodaysWeather: (state) => state.todaysWeather,
     getDailyForecasts: (state) => state.dailyForecasts,
     getHourlyForecasts: (state) => state.hourlyForecasts,
@@ -57,6 +67,7 @@ export default createStore({
       }
       try {
         const weather = await getWeatherFromCoordinates()
+        commit("setCity", weather.city)
         commit("setTodaysWeather", weather.todaysWeather)
         commit("setDailyForecasts", weather.dailyForecasts)
         commit("setHourlyForecasts", weather.hourlyForecasts)
@@ -80,6 +91,7 @@ export default createStore({
 
       try {
         const weather = await getWeatherFromCity(city)
+        commit("setCity", weather.city)
         commit("setTodaysWeather", weather.todaysWeather)
         commit("setDailyForecasts", weather.dailyForecasts)
         commit("setHourlyForecasts", weather.hourlyForecasts)
