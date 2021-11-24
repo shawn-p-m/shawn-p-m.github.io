@@ -7,6 +7,12 @@ const routes = [
 
     component: () => import("../views/Home.vue"),
   },
+  {
+    path: "/whackamole",
+    name: "Whackamole",
+
+    component: () => import("../views/Whackamole.vue"),
+  },
 ]
 
 const router = createRouter({
